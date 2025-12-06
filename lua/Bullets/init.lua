@@ -59,10 +59,10 @@ Bullets.config = {
   },
   -- Configurable key mappings
   keys = {
-    newline_cr = { key = "<cr>", desc = "Insert new bullet (insert mode)" },
-    newline_o = { key = "o", desc = "Insert new bullet below (normal mode)" },
-    renumber_visual = { key = "gN", desc = "Renumber selected list items" },
-    renumber_normal = { key = "gN", desc = "Renumber entire list" },
+    newline_cr = { key = "<cr>", desc = "Insert New Bullet" },
+    newline_o = { key = "o", desc = "Insert New Bullet Below" },
+    renumber_visual = { key = "gN", desc = "Renumber Items" },
+    renumber_normal = { key = "gN", desc = "Renumber Entire List" },
     toggle_checkbox = { key = "<leader>x", desc = "Toggle Checkbox" },
     demote_insert = { key = "<C-t>", desc = "Demote Bullet " },
     demote_normal = { key = ">>", desc = "Demote Bullet " },
