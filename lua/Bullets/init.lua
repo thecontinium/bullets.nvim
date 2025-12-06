@@ -59,17 +59,17 @@ Bullets.config = {
   },
   -- Configurable key mappings
   keys = {
-    newline_cr = "<cr>",
-    newline_o = "o",
-    renumber_visual = "gN",
-    renumber_normal = "gN",
-    toggle_checkbox = "<leader>x",
-    demote_insert = "<C-t>",
-    demote_normal = ">>",
-    demote_visual = ">",
-    promote_insert = "<C-d>",
-    promote_normal = "<<",
-    promote_visual = "<",
+    newline_cr = { key = "<cr>", desc = "Insert new bullet (insert mode)" },
+    newline_o = { key = "o", desc = "Insert new bullet below (normal mode)" },
+    renumber_visual = { key = "gN", desc = "Renumber selected list items" },
+    renumber_normal = { key = "gN", desc = "Renumber entire list" },
+    toggle_checkbox = { key = "<leader>x", desc = "Toggle Checkbox" },
+    demote_insert = { key = "<C-t>", desc = "Demote Bullet " },
+    demote_normal = { key = ">>", desc = "Demote Bullet " },
+    demote_visual = { key = ">", desc = "Demote Bullets" },
+    promote_insert = { key = "<C-d>", desc = "Promote Bullet" },
+    promote_normal = { key = "<<", desc = "Promote Bullet" },
+    promote_visual = { key = "<", desc = "Promote Bullets" },
   },
 }
 H.default_config = Bullets.config
@@ -143,31 +143,39 @@ H.apply_config = function(config)
 
   if config.mappings then
     vim.api.nvim_create_augroup("BulletMaps", { clear = true })
-    H.buf_map("imap", config.keys.newline_cr, "<Plug>(bullets-newline-cr)")
-    H.buf_map("nmap", config.keys.newline_o, "<Plug>(bullets-newline-o)")
-    H.buf_map("vmap", config.keys.renumber_visual, "<Plug>(bullets-renumber)")
-    H.buf_map("nmap", config.keys.renumber_normal, "<Plug>(bullets-renumber)")
-    H.buf_map("nmap", config.keys.toggle_checkbox, "<Plug>(bullets-toggle-checkbox)")
-    H.buf_map("imap", config.keys.demote_insert, "<Plug>(bullets-demote)")
-    H.buf_map("nmap", config.keys.demote_normal, "<Plug>(bullets-demote)")
-    H.buf_map("vmap", config.keys.demote_visual, "<Plug>(bullets-demote)")
-    H.buf_map("imap", config.keys.promote_insert, "<Plug>(bullets-promote)")
-    H.buf_map("nmap", config.keys.promote_normal, "<Plug>(bullets-promote)")
-    H.buf_map("vmap", config.keys.promote_visual, "<Plug>(bullets-promote)")
+  -- stylua: ignore start
+    H.buf_map("imap", config.keys.newline_cr.key, "<Plug>(bullets-newline-cr)", config.keys.newline_cr.desc)
+    H.buf_map("nmap", config.keys.newline_o.key, "<Plug>(bullets-newline-o)", config.keys.newline_o.desc)
+    H.buf_map("vmap", config.keys.renumber_visual.key, "<Plug>(bullets-renumber)", config.keys.renumber_visual.desc)
+    H.buf_map("nmap", config.keys.renumber_normal.key, "<Plug>(bullets-renumber)", config.keys.renumber_normal.desc)
+    H.buf_map( "nmap", config.keys.toggle_checkbox.key, "<Plug>(bullets-toggle-checkbox)", config.keys.toggle_checkbox.desc)
+    H.buf_map("imap", config.keys.demote_insert.key, "<Plug>(bullets-demote)", config.keys.demote_insert.desc)
+    H.buf_map("nmap", config.keys.demote_normal.key, "<Plug>(bullets-demote)", config.keys.demote_normal.desc)
+    H.buf_map("vmap", config.keys.demote_visual.key, "<Plug>(bullets-demote)", config.keys.demote_visual.desc)
+    H.buf_map("imap", config.keys.promote_insert.key, "<Plug>(bullets-promote)", config.keys.promote_insert.desc)
+    H.buf_map("nmap", config.keys.promote_normal.key, "<Plug>(bullets-promote)", config.keys.promote_normal.desc)
+    H.buf_map("vmap", config.keys.promote_visual.key, "<Plug>(bullets-promote)", config.keys.promote_visual.desc)
+    -- stylua: ignore end
   end
 end
 
-H.buf_map = function(mode, lhs, rhs)
+H.buf_map = function(mode, lhs, rhs, desc)
   local fts = table.concat(Bullets.config.file_types, ",")
   vim.api.nvim_create_autocmd("Filetype", {
     pattern = fts,
     group = "BulletMaps",
-    command = mode .. " <silent> <buffer> " .. lhs .. " " .. rhs,
+    callback = function()
+      vim.keymap.set(string.sub(mode, 1, 1), lhs, rhs, { buffer = true, silent = true, desc = desc })
+    end,
   })
   if Bullets.config.empty_buffers then
     vim.api.nvim_create_autocmd("BufEnter", {
       group = "BulletMaps",
-      command = 'if bufname("") == ""|' .. mode .. " <silent> <buffer> " .. lhs .. " " .. rhs .. "| endif",
+      callback = function()
+        if vim.fn.bufname("") == "" then
+          vim.keymap.set(string.sub(mode, 1, 1), lhs, rhs, { buffer = true, silent = true, desc = desc })
+        end
+      end,
     })
   end
 end
