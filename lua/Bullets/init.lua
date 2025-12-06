@@ -57,6 +57,20 @@ Bullets.config = {
     markers = " .oOx",
     toggle_partials = true,
   },
+  -- Configurable key mappings
+  keys = {
+    newline_cr = "<cr>",
+    newline_o = "o",
+    renumber_visual = "gN",
+    renumber_normal = "gN",
+    toggle_checkbox = "<leader>x",
+    demote_insert = "<C-t>",
+    demote_normal = ">>",
+    demote_visual = ">",
+    promote_insert = "<C-d>",
+    promote_normal = "<<",
+    promote_visual = "<",
+  },
 }
 H.default_config = Bullets.config
 
@@ -129,17 +143,17 @@ H.apply_config = function(config)
 
   if config.mappings then
     vim.api.nvim_create_augroup("BulletMaps", { clear = true })
-    H.buf_map("imap", "<cr>", "<Plug>(bullets-newline-cr)")
-    H.buf_map("nmap", "o", "<Plug>(bullets-newline-o)")
-    H.buf_map("vmap", "gN", "<Plug>(bullets-renumber)")
-    H.buf_map("nmap", "gN", "<Plug>(bullets-renumber)")
-    H.buf_map("nmap", "<leader>x", "<Plug>(bullets-toggle-checkbox)")
-    H.buf_map("imap", "<C-t>", "<Plug>(bullets-demote)")
-    H.buf_map("nmap", ">>", "<Plug>(bullets-demote)")
-    H.buf_map("vmap", ">", "<Plug>(bullets-demote)")
-    H.buf_map("imap", "<C-d>", "<Plug>(bullets-promote)")
-    H.buf_map("nmap", "<<", "<Plug>(bullets-promote)")
-    H.buf_map("vmap", "<", "<Plug>(bullets-promote)")
+    H.buf_map("imap", config.keys.newline_cr, "<Plug>(bullets-newline-cr)")
+    H.buf_map("nmap", config.keys.newline_o, "<Plug>(bullets-newline-o)")
+    H.buf_map("vmap", config.keys.renumber_visual, "<Plug>(bullets-renumber)")
+    H.buf_map("nmap", config.keys.renumber_normal, "<Plug>(bullets-renumber)")
+    H.buf_map("nmap", config.keys.toggle_checkbox, "<Plug>(bullets-toggle-checkbox)")
+    H.buf_map("imap", config.keys.demote_insert, "<Plug>(bullets-demote)")
+    H.buf_map("nmap", config.keys.demote_normal, "<Plug>(bullets-demote)")
+    H.buf_map("vmap", config.keys.demote_visual, "<Plug>(bullets-demote)")
+    H.buf_map("imap", config.keys.promote_insert, "<Plug>(bullets-promote)")
+    H.buf_map("nmap", config.keys.promote_normal, "<Plug>(bullets-promote)")
+    H.buf_map("vmap", config.keys.promote_visual, "<Plug>(bullets-promote)")
   end
 end
 
