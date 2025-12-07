@@ -66,6 +66,8 @@ Bullets.config = {
     toggle_checkbox = { key = "<leader>x", desc = "Toggle Checkbox" },
     check_all = { key = "<localleader>X", desc = "Check Entire list" },
     uncheck_all = { key = "<localleader>U", desc = "Uncheck Entire list" },
+    check_all_lists = { key = "<leader>cA", desc = "Check All" },
+    uncheck_all_lists = { key = "<leader>cU", desc = "Uncheck All" },
     demote_insert = { key = "<C-t>", desc = "Demote Bullet " },
     demote_normal = { key = ">>", desc = "Demote Bullet " },
     demote_visual = { key = ">", desc = "Demote Bullets" },
@@ -120,6 +122,8 @@ H.apply_config = function(config)
   vim.api.nvim_create_user_command("ToggleCheckbox", function() Bullets.toggle_checkboxes_nested() end, {})
   vim.api.nvim_create_user_command('CheckAll', function() Bullets.check_all_checkboxes() end, {})
   vim.api.nvim_create_user_command('UncheckAll', function() Bullets.uncheck_all_checkboxes() end, {})
+  vim.api.nvim_create_user_command('CheckAllLists', function() Bullets.check_all_lists() end, {})
+  vim.api.nvim_create_user_command('UncheckAllLists', function() Bullets.uncheck_all_lists() end, {})
   -- stylua: ignore end
 
   vim.api.nvim_set_keymap("i", "<Plug>(bullets-newline-cr)", "", {
@@ -140,6 +144,18 @@ H.apply_config = function(config)
   )
   vim.api.nvim_set_keymap("n", "<Plug>(bullets-check-all)", ":CheckAll<cr>", { noremap = true, silent = true })
   vim.api.nvim_set_keymap("n", "<Plug>(bullets-uncheck-all)", ":UncheckAll<cr>", { noremap = true, silent = true })
+  vim.api.nvim_set_keymap(
+    "n",
+    "<Plug>(bullets-check-all-lists)",
+    ":CheckAllLists<cr>",
+    { noremap = true, silent = true }
+  )
+  vim.api.nvim_set_keymap(
+    "n",
+    "<Plug>(bullets-uncheck-all-lists)",
+    ":UncheckAllLists<cr>",
+    { noremap = true, silent = true }
+  )
   vim.api.nvim_set_keymap("i", "<Plug>(bullets-demote)", "<C-O>:BulletDemote<cr>", { noremap = true, silent = true })
   vim.api.nvim_set_keymap("n", "<Plug>(bullets-demote)", ":BulletDemote<cr>", { noremap = true, silent = true })
   vim.api.nvim_set_keymap("v", "<Plug>(bullets-demote)", ":BulletDemoteVisual<cr>", { noremap = true, silent = true })
@@ -156,6 +172,8 @@ H.apply_config = function(config)
     H.buf_map("nmap", config.keys.renumber_normal.key, "<Plug>(bullets-renumber)", config.keys.renumber_normal.desc)
     H.buf_map("nmap", config.keys.toggle_checkbox.key, "<Plug>(bullets-toggle-checkbox)", config.keys.toggle_checkbox.desc)
     H.buf_map('nmap', config.keys.check_all.key, '<Plug>(bullets-check-all)', config.keys.check_all.desc)
+    H.buf_map('nmap', config.keys.check_all_lists.key, '<Plug>(bullets-check-all-lists)', config.keys.check_all_lists.desc)
+    H.buf_map('nmap', config.keys.uncheck_all_lists.key, '<Plug>(bullets-uncheck-all-lists)', config.keys.uncheck_all_lists.desc)
     H.buf_map('nmap', config.keys.uncheck_all.key, '<Plug>(bullets-uncheck-all)', config.keys.uncheck_all.desc)
     H.buf_map("imap", config.keys.demote_insert.key, "<Plug>(bullets-demote)", config.keys.demote_insert.desc)
     H.buf_map("nmap", config.keys.demote_normal.key, "<Plug>(bullets-demote)", config.keys.demote_normal.desc)
@@ -1108,6 +1126,29 @@ H.set_all_checkboxes = function(checked)
   end
 end
 
+H.set_all_checkboxes_in_buffer = function(checked)
+  -- Set all checkboxes in all lists in the buffer to checked (true) or unchecked (false)
+  local total_lines = vim.fn.line("$")
+  local checkbox_markers = Bullets.config.checkbox.markers
+  local marker
+
+  if checked then
+    marker = string.sub(checkbox_markers, #checkbox_markers, #checkbox_markers)
+  else
+    marker = string.sub(checkbox_markers, 1, 1)
+  end
+
+  for line = 1, total_lines do
+    local indent = vim.fn.indent(line)
+    local bullet = H.closest_bullet_types(line, indent)
+    bullet = H.resolve_bullet_type(bullet)
+
+    if next(bullet) ~= nil and bullet.type == "chk" and bullet.starting_at_line_num == line then
+      H.set_checkbox(line, marker)
+    end
+  end
+end
+
 Bullets.renumber_whole_list = function(start_pos, end_pos)
   -- Renumbers the whole list containing the cursor.
   -- Does not renumber across blank lines.
@@ -1206,6 +1247,14 @@ end
 
 Bullets.uncheck_all_checkboxes = function()
   H.set_all_checkboxes(false)
+end
+
+Bullets.check_all_lists = function()
+  H.set_all_checkboxes_in_buffer(true)
+end
+
+Bullets.uncheck_all_lists = function()
+  H.set_all_checkboxes_in_buffer(false)
 end
 
 return Bullets
