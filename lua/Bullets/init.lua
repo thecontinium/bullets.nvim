@@ -198,7 +198,7 @@ H.buf_map = function(mode, lhs, rhs, desc)
     vim.api.nvim_create_autocmd("BufEnter", {
       group = "BulletMaps",
       callback = function()
-        if vim.fn.bufname("") == "" and vim.bo.buftyp == "" then
+        if vim.fn.bufname("") == "" and vim.bo.buftype == "" then
           vim.keymap.set(string.sub(mode, 1, 1), lhs, rhs, { buffer = true, silent = true, desc = desc })
         end
       end,
