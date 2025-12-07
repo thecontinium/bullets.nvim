@@ -64,8 +64,8 @@ Bullets.config = {
     renumber_visual = { key = "gN", desc = "Renumber Items" },
     renumber_normal = { key = "gN", desc = "Renumber Entire List" },
     toggle_checkbox = { key = "<leader>x", desc = "Toggle Checkbox" },
-    check_all = { key = "<localleader>X", desc = "Check Entire list" },
-    uncheck_all = { key = "<localleader>U", desc = "Uncheck Entire list" },
+    check_all = { key = "<leader>X", desc = "Check Entire list" },
+    uncheck_all = { key = "<leader>U", desc = "Uncheck Entire list" },
     check_all_lists = { key = "<leader>cA", desc = "Check All" },
     uncheck_all_lists = { key = "<leader>cU", desc = "Uncheck All" },
     demote_insert = { key = "<C-t>", desc = "Demote Bullet " },
@@ -198,7 +198,7 @@ H.buf_map = function(mode, lhs, rhs, desc)
     vim.api.nvim_create_autocmd("BufEnter", {
       group = "BulletMaps",
       callback = function()
-        if vim.fn.bufname("") == "" then
+        if vim.fn.bufname("") == "" and vim.bo.buftyp == "" then
           vim.keymap.set(string.sub(mode, 1, 1), lhs, rhs, { buffer = true, silent = true, desc = desc })
         end
       end,
