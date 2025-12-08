@@ -528,10 +528,39 @@ H.change_line_bullet_level = function(direction, lnum)
       vim.fn.setline(lnum, curr_line[0].text_after_bullet)
       return
     else
-      vim.cmd(lnum .. "normal! <<")
+      -- Find parent bullet to calculate outdent amount
+      local curr_indent = vim.fn.indent(lnum)
+      local parent_bullet = H.closest_bullet_types(lnum - Bullets.config.line_spacing, curr_indent - 1)
+      parent_bullet = H.resolve_bullet_type(parent_bullet)
+      local outdent_amount = 2 -- default for standard bullets
+      if next(parent_bullet) ~= nil then
+        -- Calculate parent's bullet length (marker + closure + trailing space)
+        outdent_amount = vim.str_utfindex(parent_bullet.bullet)
+          + vim.str_utfindex(parent_bullet.closure)
+          + vim.str_utfindex(parent_bullet.trailing_space)
+      end
+      local line = vim.fn.getline(lnum)
+      local leading_spaces = line:match("^(%s*)")
+      local spaces_count = #leading_spaces
+      if spaces_count >= outdent_amount then
+        local new_line = string.rep(" ", spaces_count - outdent_amount) .. line:sub(spaces_count + 1)
+        vim.fn.setline(lnum, new_line)
+      end
     end
   else
-    vim.cmd(lnum .. "normal! >>")
+    -- Demoting: indent to align with parent's text content
+    local curr_indent = vim.fn.indent(lnum)
+    local parent_bullet = H.closest_bullet_types(lnum - Bullets.config.line_spacing, curr_indent)
+    parent_bullet = H.resolve_bullet_type(parent_bullet)
+    local indent_amount = 2 -- default for standard bullets
+    if next(parent_bullet) ~= nil then
+      -- Calculate parent's bullet length to determine child indent
+      indent_amount = vim.str_utfindex(parent_bullet.bullet)
+        + vim.str_utfindex(parent_bullet.closure)
+        + vim.str_utfindex(parent_bullet.trailing_space)
+    end
+    local line = vim.fn.getline(lnum)
+    vim.fn.setline(lnum, string.rep(" ", indent_amount) .. line)
   end
 
   if next(curr_line) == nil then
@@ -589,9 +618,6 @@ H.change_line_bullet_level = function(direction, lnum)
   if curr_indent == closest_indent then
     -- The closest bullet is a sibling so the current bullet should
     -- increment to the next bullet marker.
-
-    -- local next_bullet = H.next_bullet_str(closest_bullet)
-    -- bullet_str = pad_to_length(next_bullet, closest_bullet.bullet_length) .. curr_bullet.text_after_bullet
     bullet_str = H.next_bullet_str(closest_bullet) .. curr_bullet.text_after_bullet
   elseif closest_index + 1 > #bullets_outline_levels and curr_indent > closest_indent then
     -- The closest bullet is a parent and its type is the last one defined in
@@ -606,7 +632,6 @@ H.change_line_bullet_level = function(direction, lnum)
 
     local next_type = bullets_outline_levels[closest_index + 1]
     local next_islower = next_type == string.lower(next_type)
-    -- local trailing_space = ' '
     curr_bullet.closure = closest_bullet.closure
 
     -- set the bullet marker to the first character of the new type
