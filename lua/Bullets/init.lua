@@ -969,7 +969,6 @@ H.set_child_checkboxes = function(lnum, checked)
   end
 
   local children = H.get_children_line_numbers(lnum)
-  vim.print("CHILDREN", children)
   if next(children) ~= nil then
     local checkbox_markers = Bullets.config.checkbox.markers
     for _, child in ipairs(children) do
