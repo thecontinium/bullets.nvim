@@ -835,7 +835,6 @@ H.toggle_checkbox = function(lnum)
     end
   elseif checkbox_content == string.sub(checkbox_markers, 1, 1) then
     marker = string.sub(checkbox_markers, -1)
-    -- marker = string.sub(checkbox_markers,#checkbox_markers, 1)
   elseif
     string.find(checkbox_content, "x") ~= nil
     or string.find(checkbox_content, "X") ~= nil
@@ -847,7 +846,7 @@ H.toggle_checkbox = function(lnum)
   end
 
   H.set_checkbox(lnum, marker)
-  return marker == string.sub(checkbox_markers, #checkbox_markers, 1)
+  return marker == string.sub(checkbox_markers, -1) and 1 or 0
 end
 
 H.get_sibling_line_numbers = function(lnum)
@@ -880,9 +879,9 @@ H.get_children_line_numbers = function(line_num)
   -- find the first child (if any) so we can figure out the indentation for the
   -- rest of the children
   local lnum = line_num + 1
-  local indent = vim.fn.indent(lnum)
+  local indent = vim.fn.indent(line_num)
   local buf_end = vim.fn.line("$")
-  local curr_indent = indent(lnum)
+  local curr_indent = vim.fn.indent(lnum)
   local bullet_kinds = H.closest_bullet_types(lnum, curr_indent)
   local child_lnum = 0
   local blank_lines = 0
@@ -899,7 +898,7 @@ H.get_children_line_numbers = function(line_num)
       end
     end
     lnum = lnum + 1
-    curr_indent = indent(lnum)
+    curr_indent = vim.fn.indent(lnum)
     bullet_kinds = H.closest_bullet_types(lnum, curr_indent)
   end
 
@@ -970,12 +969,13 @@ H.set_child_checkboxes = function(lnum, checked)
   end
 
   local children = H.get_children_line_numbers(lnum)
+  vim.print("CHILDREN", children)
   if next(children) ~= nil then
     local checkbox_markers = Bullets.config.checkbox.markers
-    for child in children do
+    for _, child in ipairs(children) do
       local marker
-      if checked then
-        marker = string.sub(checkbox_markers, vim.str_utfindex(checkbox_markers), 1)
+      if checked == 1 then
+        marker = string.sub(checkbox_markers, -1)
       else
         marker = string.sub(checkbox_markers, 1, 1)
       end
@@ -1005,7 +1005,7 @@ Bullets.toggle_checkboxes_nested = function()
     H.set_parent_checkboxes(lnum, completion_marker)
 
     -- Toggle children
-    if checked then
+    if checked >= 0 then
       H.set_child_checkboxes(lnum, checked)
     end
   end
